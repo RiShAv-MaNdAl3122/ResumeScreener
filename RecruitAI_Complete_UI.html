@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RecruitAI — Resume Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F4F0;
+    --surface: #FFFFFF;
+    --surface2: #F0EFE9;
+    --border: rgba(0,0,0,0.09);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1A1917;
+    --text2: #6B6960;
+    --text3: #A8A69E;
+    --accent: #1D9E75;
+    --accent-soft: #E1F5EE;
+    --accent-mid: #0F6E56;
+    --amber: #BA7517;
+    --amber-soft: #FAEEDA;
+    --red: #C0392B;
+    --red-soft: #FDECEA;
+    --blue: #185FA5;
+    --blue-soft: #E6F1FB;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+    --sidebar-w: 220px;
+    --topbar-h: 56px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+  }
+  .sb-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--accent);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-icon svg { width: 18px; height: 18px; }
+  .logo-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .logo-sub { font-size: 11px; color: var(--text3); }
+
+  .sb-nav { padding: 12px 0; flex: 1; overflow-y: auto; }
+  .sb-section-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    color: var(--text3); padding: 10px 20px 6px; text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px; font-size: 13px; font-weight: 400;
+    color: var(--text2); cursor: pointer; border: none;
+    background: transparent; width: 100%; text-align: left;
+    border-left: 2.5px solid transparent;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-soft); color: var(--accent);
+    border-left-color: var(--accent); font-weight: 500;
+  }
+  .nav-item .ni-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto; background: var(--accent); color: white;
+    font-size: 10px; font-weight: 600; padding: 1px 7px;
+    border-radius: 100px; min-width: 20px; text-align: center;
+  }
+
+  .sb-user {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 600;
+    color: white; flex-shrink: 0;
+  }
+  .user-name { font-size: 12px; font-weight: 500; color: var(--text); }
+  .user-role { font-size: 11px; color: var(--text3); }
+  .user-menu { margin-left: auto; cursor: pointer; color: var(--text3); }
+
+  /* ── MAIN AREA ── */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    height: var(--topbar-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 12px; flex-shrink: 0;
+  }
+  .topbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar-back {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text2); cursor: pointer;
+    background: none; border: none; font-family: var(--font);
+  }
+  .topbar-back:hover { color: var(--text); }
+  .topbar-sep { color: var(--text3); }
+  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .topbar-search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 6px 12px;
+    font-size: 13px; color: var(--text2); cursor: text;
+    margin-right: 4px;
+  }
+  .topbar-search input {
+    background: none; border: none; outline: none;
+    font-size: 13px; color: var(--text); width: 160px;
+    font-family: var(--font);
+  }
+  .notif-btn {
+    width: 34px; height: 34px; border-radius: var(--radius-sm);
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative;
+  }
+  .notif-dot {
+    width: 8px; height: 8px; background: var(--red);
+    border-radius: 50%; position: absolute; top: 6px; right: 6px;
+    border: 1.5px solid var(--surface);
+  }
+
+  /* ── PAGE CONTENT ── */
+  .page { flex: 1; overflow-y: auto; display: none; }
+  .page.active { display: block; }
+  .page-inner { padding: 24px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    border: none; font-family: var(--font); transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn svg { width: 14px; height: 14px; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-mid); }
+  .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: var(--surface2); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-danger { background: var(--red-soft); color: var(--red); border: 1px solid rgba(192,57,43,0.2); }
+  .btn-sm { padding: 5px 11px; font-size: 12px; }
+  .btn-xs { padding: 3px 9px; font-size: 11px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .card-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .card-body { padding: 20px; }
+
+  /* ── METRIC CARDS ── */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .metric-label { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }
+  .metric-value { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 6px; }
+  .metric-delta { font-size: 12px; color: var(--accent); display: flex; align-items: center; gap: 4px; }
+  .metric-delta.down { color: var(--red); }
+  .metric-delta.neutral { color: var(--text3); }
+  .metric-icon {
+    float: right; width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -4px;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge-success { background: var(--accent-soft); color: var(--accent-mid); }
+  .badge-success .badge-dot { background: var(--accent); }
+  .badge-warning { background: var(--amber-soft); color: #7A4F00; }
+  .badge-warning .badge-dot { background: var(--amber); }
+  .badge-danger { background: var(--red-soft); color: var(--red); }
+  .badge-danger .badge-dot { background: var(--red); }
+  .badge-info { background: var(--blue-soft); color: var(--blue); }
+  .badge-neutral { background: var(--surface2); color: var(--text2); }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border); background: var(--surface2);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 12px 14px; font-size: 13px; color: var(--text); vertical-align: middle; }
+
+  /* ── FORMS ── */
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+  .form-label span { color: var(--red); }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 9px 12px;
+    font-size: 13px; color: var(--text); background: var(--surface);
+    font-family: var(--font); outline: none; transition: border-color 0.15s;
+    appearance: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 88px; line-height: 1.5; }
+  .form-select { cursor: pointer; }
+  .form-hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
+
+  /* ── SCORE RING ── */
+  .ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+  .ring-label {
+    position: absolute; inset: 0; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    font-family: var(--mono);
+  }
+
+  /* ── SKILL BAR ── */
+  .skill-bar { margin-bottom: 8px; }
+  .skill-bar-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .skill-bar-header span:first-child { color: var(--text2); }
+  .skill-bar-header span:last-child { font-weight: 500; color: var(--text); font-family: var(--mono); }
+  .skill-bar-track { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .skill-bar-fill { height: 5px; border-radius: 3px; transition: width 0.6s ease; }
+
+  /* ── SEARCH & FILTER BAR ── */
+  .filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-search {
+    flex: 1; min-width: 180px; display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 8px 12px;
+  }
+  .filter-search input { flex: 1; border: none; outline: none; font-size: 13px; color: var(--text); background: transparent; font-family: var(--font); }
+  .filter-search svg { color: var(--text3); flex-shrink: 0; }
+  .filter-select {
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    padding: 8px 12px; font-size: 13px; color: var(--text);
+    background: var(--surface); font-family: var(--font); cursor: pointer;
+    outline: none; appearance: none; padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A8A69E' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+
+  /* ── AVATAR ── */
+  .avatar {
+    border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 600; flex-shrink: 0;
+    font-family: var(--font);
+  }
+  .avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+  .avatar-md { width: 36px; height: 36px; font-size: 13px; }
+  .avatar-lg { width: 48px; height: 48px; font-size: 16px; }
+  .avatar-xl { width: 60px; height: 60px; font-size: 20px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-track { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 6px; border-radius: 3px; }
+
+  /* ── TAGS ── */
+  .tag {
+    display: inline-block; padding: 3px 10px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 100px;
+    font-size: 11px; color: var(--text2); font-weight: 400;
+  }
+  .tag-accent { background: var(--accent-soft); color: var(--accent-mid); border-color: transparent; }
+
+  /* ── TIMELINE ── */
+  .timeline-item { display: flex; gap: 12px; padding-bottom: 16px; position: relative; }
+  .timeline-item:not(:last-child)::before {
+    content: ''; position: absolute; left: 9px; top: 22px;
+    bottom: 0; width: 1px; background: var(--border2);
+  }
+  .timeline-dot { width: 20px; height: 20px; border-radius: 50%; background: var(--accent-soft); border: 2px solid var(--accent); flex-shrink: 0; margin-top: 2px; }
+  .timeline-body { flex: 1; }
+  .timeline-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .timeline-sub { font-size: 12px; color: var(--text2); }
+  .timeline-date { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+
+  /* ── UPLOAD DROP ZONE ── */
+  .drop-zone {
+    border: 2px dashed var(--border2); border-radius: var(--radius-lg);
+    padding: 36px 24px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--surface2);
+  }
+  .drop-zone:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .drop-zone-icon {
+    width: 52px; height: 52px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; box-shadow: var(--shadow-sm);
+  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* ── SECTION TITLE ── */
+  .section-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 40px 24px; }
+  .empty-state-icon { width: 52px; height: 52px; background: var(--surface2); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+  .empty-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--text3); }
+
+  /* ── PAGINATION ── */
+  .pagination { display: flex; align-items: center; gap: 4px; }
+  .pag-btn {
+    width: 32px; height: 32px; border-radius: 6px; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text2); transition: all 0.12s;
+  }
+  .pag-btn:hover { background: var(--surface2); }
+  .pag-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* ── GRID HELPERS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+  .gap-12 { gap: 12px; }
+
+  /* ── CHART BAR ── */
+  .chart-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .chart-bar-label { font-size: 12px; color: var(--text2); width: 90px; flex-shrink: 0; text-align: right; }
+  .chart-bar-track { flex: 1; height: 20px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .chart-bar-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; }
+  .chart-bar-fill span { font-size: 11px; font-weight: 600; color: white; }
+  .chart-bar-val { font-size: 12px; color: var(--text2); width: 28px; text-align: right; font-family: var(--mono); }
+
+  /* ── COMPARE BAR ── */
+  .compare-bar { margin-bottom: 14px; }
+  .compare-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .compare-bar-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .compare-bar-vals { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 8px; }
+  .compare-bar-track { position: relative; height: 8px; background: var(--surface2); border-radius: 4px; overflow: visible; }
+  .compare-bar-fill { height: 8px; border-radius: 4px; }
+  .compare-bar-req { position: absolute; top: -4px; width: 2px; height: 16px; background: var(--text3); border-radius: 1px; opacity: 0.4; }
+
+  /* ── JD CARD ── */
+  .jd-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+    transition: box-shadow 0.15s;
+  }
+  .jd-card:hover { box-shadow: var(--shadow); }
+  .jd-card-icon {
+    width: 42px; height: 42px; border-radius: 10px; background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .jd-card-meta { flex: 1; min-width: 0; }
+  .jd-card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .jd-card-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .jd-card-actions { display: flex; align-items: center; gap: 8px; }
+
+  /* ── ACTIVITY FEED ── */
+  .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+  .activity-text { flex: 1; }
+  .activity-msg { font-size: 12px; color: var(--text); }
+  .activity-time { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+
+  /* ── SETTINGS PANEL ── */
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .toggle {
+    width: 38px; height: 22px; background: var(--border2); border-radius: 11px;
+    position: relative; cursor: pointer; transition: background 0.2s;
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle::after {
+    content: ''; position: absolute; width: 16px; height: 16px;
+    background: white; border-radius: 50%; top: 3px; left: 3px;
+    transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { left: 19px; }
+
+  /* ── FUNNEL ── */
+  .funnel-step { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .funnel-label { font-size: 12px; color: var(--text2); width: 88px; flex-shrink: 0; text-align: right; }
+  .funnel-track { flex: 1; height: 24px; background: var(--surface2); border-radius: 5px; overflow: hidden; }
+  .funnel-fill { height: 24px; border-radius: 5px; display: flex; align-items: center; }
+  .funnel-fill span { font-size: 11px; font-weight: 600; color: white; padding-left: 9px; }
+  .funnel-count { font-size: 12px; color: var(--text3); width: 24px; text-align: right; font-family: var(--mono); }
+  .funnel-pct { font-size: 11px; color: var(--text3); width: 36px; font-family: var(--mono); }
+
+  /* ── LOGIN PAGE ── */
+  #login-page {
+    position: fixed; inset: 0; z-index: 100;
+    background: linear-gradient(135deg, #EEF9F5 0%, #F5F4F0 50%, #EDF3FB 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 18px; padding: 40px; width: 380px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.09);
+  }
+  .login-logo {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 32px;
+  }
+  .login-logo-icon {
+    width: 42px; height: 42px; background: var(--accent);
+    border-radius: 11px; display: flex; align-items: center; justify-content: center;
+  }
+  .login-logo-name { font-size: 20px; font-weight: 600; color: var(--text); }
+  .login-logo-sub { font-size: 12px; color: var(--text3); }
+  .login-heading { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .login-sub { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+  .login-footer { text-align: center; margin-top: 20px; font-size: 12px; color: var(--text3); }
+  .social-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 9px; border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    font-size: 13px; color: var(--text); cursor: pointer; background: white;
+    font-family: var(--font); transition: background 0.15s;
+  }
+  .social-btn:hover { background: var(--surface2); }
+  .or-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .or-divider span { font-size: 12px; color: var(--text3); }
+
+  /* ── NOTIFICATIONS PANEL ── */
+  .notif-panel {
+    position: absolute; right: 20px; top: 58px; width: 320px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow);
+    z-index: 50; display: none;
+  }
+  .notif-panel.open { display: block; }
+
+  /* ── TOOLTIP ── */
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%); background: var(--text); color: white;
+    font-size: 11px; padding: 4px 8px; border-radius: 5px;
+    white-space: nowrap; pointer-events: none; z-index: 99;
+  }
+
+  /* ── PROFILE STAT ── */
+  .profile-stat { text-align: center; }
+  .profile-stat-value { font-size: 20px; font-weight: 600; color: var(--text); }
+  .profile-stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ── SCROLL ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* ── MISC ── */
+  .flex { display: flex; }
+  .flex-col { display: flex; flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .gap-10 { gap: 10px; }
+  .gap-16 { gap: 16px; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mb-4 { margin-bottom: 4px; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-12 { margin-bottom: 12px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-20 { margin-bottom: 20px; }
+  .text-sm { font-size: 12px; }
+  .text-xs { font-size: 11px; }
+  .text-muted { color: var(--text2); }
+  .text-faint { color: var(--text3); }
+  .text-accent { color: var(--accent); }
+  .text-red { color: var(--red); }
+  .font-mono { font-family: var(--mono); }
+  .fw-500 { font-weight: 500; }
+  .fw-600 { font-weight: 600; }
+  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .animate-in { animation: fadeIn 0.25s ease both; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN PAGE ══════════ -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg>
+      </div>
+      <div>
+        <div class="login-logo-name">RecruitAI</div>
+        <div class="login-logo-sub">Resume Intelligence Platform</div>
+      </div>
+    </div>
+    <h2 class="login-heading">Welcome back</h2>
+    <p class="login-sub">Sign in to your HR dashboard</p>
+    <div class="grid-2 gap-12 mb-12" style="margin-bottom:12px;">
+      <button class="social-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Google
+      </button>
+      <button class="social-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 13.845 13.845 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        SSO
+      </button>
+    </div>
+    <div class="or-divider"><span>or sign in with email</span></div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input class="form-input" type="email" value="admin@company.com" placeholder="you@company.com"/>
+    </div>
+    <div class="form-group" style="margin-bottom:10px;">
+      <div class="flex justify-between items-center mb-4" style="margin-bottom:6px;">
+        <label class="form-label" style="margin:0;">Password</label>
+        <a href="#" style="font-size:12px;color:var(--accent);text-decoration:none;">Forgot password?</a>
+      </div>
+      <input class="form-input" type="password" value="password"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="form-select">
+        <option>HR Manager</option>
+        <option>Admin</option>
+        <option>Recruiter</option>
+        <option>Read-only Viewer</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px;" onclick="doLogin()">Sign In</button>
+    <p class="login-footer">Demo credentials are pre-filled — just click Sign In</p>
+  </div>
+</div>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="app" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sb-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">RecruitAI</div>
+        <div class="logo-sub">HR Platform</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section-label">Main</div>
+      <button class="nav-item active" onclick="showPage('dashboard',this)">
+        <svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" onclick="showPage('jobs',this)">
+        <svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Job Descriptions
+      </button>
+      <button class="nav-item" onclick="showPage('upload',this)">
+        <svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Upload Resumes
+      </button>
+      <button class="nav-item" onclick="showPage('candidates',this)">
+        <svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Candidates
+        <span class="nav-badge">7</span>
+      </button>
+
+      <div class="sb-section-label" style="margin-top:8px;">Analytics</div>
+      <button class="nav-item" onclick="showPage('reports',this)">
+        <svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Reports
+      </button>
+
+      <div class="sb-section-label" style="margin-top:8px;">System</div>
+      <button class="nav-item" onclick="showPage('settings',this)">
+        <svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </button>
+    </nav>
+
+    <div class="sb-user">
+      <div class="avatar avatar-sm">HR</div>
+      <div>
+        <div class="user-name">Admin User</div>
+        <div class="user-role">HR Manager</div>
+      </div>
+      <div class="user-menu" onclick="doLogout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div id="topbar-dashboard" class="topbar">
+      <span class="topbar-title">Dashboard</span>
+      <div class="topbar-actions">
+        <div class="topbar-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input placeholder="Search candidates, JDs…" oninput="globalSearch(this.value)" onkeydown="if(event.key==='Enter')globalSearchGo(this.value)"/>
+        </div>
+        <div class="notif-btn" onclick="toggleNotif()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showPage('upload',document.querySelector('.nav-item:nth-child(5)'))">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Upload Resumes
+        </button>
+      </div>
+      <!-- notification panel -->
+      <div class="notif-panel" id="notif-panel">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:600;">Notifications</span>
+          <span style="font-size:11px;color:var(--accent);cursor:pointer;">Mark all read</span>
+        </div>
+        <div style="padding:6px 0;">
+          <div class="activity-item" style="padding:10px 16px;">
+            <div class="activity-icon" style="background:var(--accent-soft);color:var(--accent);">✓</div>
+            <div class="activity-text"><div class="activity-msg">Arjun Sharma shortlisted for ML Eng.</div><div class="activity-time">2 min ago</div></div>
+          </div>
+          <div class="activity-item" style="padding:10px 16px;">
+            <div class="activity-icon" style="background:var(--blue-soft);color:var(--blue);">↻</div>
+            <div class="activity-text"><div class="activity-msg">24 resumes processed — ML Engineer</div><div class="activity-time">18 min ago</div></div>
+          </div>
+          <div class="activity-item" style="padding:10px 16px;">
+            <div class="activity-icon" style="background:var(--amber-soft);color:var(--amber);">+</div>
+            <div class="activity-text"><div class="activity-msg">New JD created — Data Scientist</div><div class="activity-time">1 hr ago</div></div>
+          </div>
+          <div class="activity-item" style="padding:10px 16px;border-bottom:none;">
+            <div class="activity-icon" style="background:var(--red-soft);color:var(--red);">!</div>
+            <div class="activity-text"><div class="activity-msg">Processing error on batch_2.zip</div><div class="activity-time">2 hr ago</div></div>
+          </div>
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--border);text-align:center;"><span style="font-size:12px;color:var(--accent);cursor:pointer;">View all notifications</span></div>
+      </div>
+    </div>
+
+    <div id="topbar-jobs" class="topbar" style="display:none;">
+      <span class="topbar-title">Job Descriptions</span>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="showPage('create-jd',null)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:13px;height:13px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New JD
+        </button>
+      </div>
+    </div>
+
+    <div id="topbar-create-jd" class="topbar" style="display:none;">
+      <button class="topbar-back" onclick="showPage('jobs',null)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+        Job Descriptions
+      </button>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">Create Job Description</span>
+    </div>
+
+    <div id="topbar-upload" class="topbar" style="display:none;">
+      <span class="topbar-title">Upload Resumes</span>
+      <div class="topbar-actions">
+        <span style="font-size:12px;color:var(--text3);">Supported: PDF, DOCX, ZIP (bulk)</span>
+      </div>
+    </div>
+
+    <div id="topbar-candidates" class="topbar" style="display:none;">
+      <span class="topbar-title">Candidates</span>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export Excel
+        </button>
+        <button class="btn btn-ghost btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export PDF
+        </button>
+      </div>
+    </div>
+
+    <div id="topbar-detail" class="topbar" style="display:none;">
+      <button class="topbar-back" onclick="showPage('candidates',null)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+        Candidates
+      </button>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title" id="detail-topbar-name">Candidate Profile</span>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm">Download Resume</button>
+        <button class="btn btn-danger btn-sm" id="detail-reject-btn" onclick="updateStatus('Rejected')">Reject</button>
+        <button class="btn btn-primary btn-sm" id="detail-shortlist-btn" onclick="updateStatus('Shortlisted')">Shortlist</button>
+      </div>
+    </div>
+
+    <div id="topbar-reports" class="topbar" style="display:none;">
+      <span class="topbar-title">Reports &amp; Analytics</span>
+      <div class="topbar-actions">
+        <select class="filter-select" style="font-size:12px;padding:6px 28px 6px 10px;">
+          <option>Last 30 days</option>
+          <option>Last 90 days</option>
+          <option>All time</option>
+        </select>
+        <button class="btn btn-secondary btn-sm">Export Report</button>
+      </div>
+    </div>
+
+    <div id="topbar-settings" class="topbar" style="display:none;">
+      <span class="topbar-title">Settings</span>
+    </div>
+
+    <!-- ══ PAGE: DASHBOARD ══ -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-inner">
+        <!-- Metrics -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="flex justify-between items-center">
+              <div class="metric-label">Active Jobs</div>
+              <div class="metric-icon" style="background:var(--accent-soft);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+              </div>
+            </div>
+            <div class="metric-value">4</div>
+            <div class="metric-delta">↑ 1 this week</div>
+          </div>
+          <div class="metric-card">
+            <div class="flex justify-between items-center">
+              <div class="metric-label">Resumes Processed</div>
+              <div class="metric-icon" style="background:var(--blue-soft);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+            </div>
+            <div class="metric-value">85</div>
+            <div class="metric-delta">↑ 12 uploaded today</div>
+          </div>
+          <div class="metric-card">
+            <div class="flex justify-between items-center">
+              <div class="metric-label">Avg Match Score</div>
+              <div class="metric-icon" style="background:#EAF3DE;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+              </div>
+            </div>
+            <div class="metric-value">72%</div>
+            <div class="metric-delta">↑ +3.2 pts this month</div>
+          </div>
+          <div class="metric-card">
+            <div class="flex justify-between items-center">
+              <div class="metric-label">Shortlisted</div>
+              <div class="metric-icon" style="background:var(--amber-soft);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+              </div>
+            </div>
+            <div class="metric-value">18</div>
+            <div class="metric-delta neutral">21% shortlist rate</div>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="grid-2" style="gap:16px;margin-bottom:16px;">
+          <!-- Score distribution -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Score Distribution</div>
+                <div class="card-sub">85 resumes processed</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-bar-row"><div class="chart-bar-label">90–100%</div><div class="chart-bar-track"><div class="chart-bar-fill" style="width:37%;background:#1D9E75;"><span>8</span></div></div><div class="chart-bar-val">8</div></div>
+              <div class="chart-bar-row"><div class="chart-bar-label">80–89%</div><div class="chart-bar-track"><div class="chart-bar-fill" style="width:64%;background:#5DCAA5;"><span>14</span></div></div><div class="chart-bar-val">14</div></div>
+              <div class="chart-bar-row"><div class="chart-bar-label">70–79%</div><div class="chart-bar-track"><div class="chart-bar-fill" style="width:100%;background:#BA7517;"><span>22</span></div></div><div class="chart-bar-val">22</div></div>
+              <div class="chart-bar-row"><div class="chart-bar-label">60–69%</div><div class="chart-bar-track"><div class="chart-bar-fill" style="width:86%;background:#EF9F27;"><span>19</span></div></div><div class="chart-bar-val">19</div></div>
+              <div class="chart-bar-row"><div class="chart-bar-label">&lt; 60%</div><div class="chart-bar-track"><div class="chart-bar-fill" style="width:100%;background:#C0392B;"><span>22</span></div></div><div class="chart-bar-val">22</div></div>
+            </div>
+          </div>
+          <!-- Activity -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Activity</div>
+              <span style="font-size:12px;color:var(--accent);cursor:pointer;">View all</span>
+            </div>
+            <div class="card-body" style="padding-top:4px;">
+              <div class="activity-item"><div class="activity-icon" style="background:var(--accent-soft);color:var(--accent);font-size:14px;">✓</div><div class="activity-text"><div class="activity-msg fw-500">Arjun Sharma shortlisted for ML Eng.</div><div class="activity-time">2 min ago</div></div></div>
+              <div class="activity-item"><div class="activity-icon" style="background:var(--blue-soft);color:var(--blue);">↻</div><div class="activity-text"><div class="activity-msg">24 resumes processed — ML Engineer</div><div class="activity-time">18 min ago</div></div></div>
+              <div class="activity-item"><div class="activity-icon" style="background:var(--amber-soft);color:var(--amber);">+</div><div class="activity-text"><div class="activity-msg">Data Scientist JD created &amp; published</div><div class="activity-time">1 hr ago</div></div></div>
+              <div class="activity-item"><div class="activity-icon" style="background:var(--surface2);color:var(--text3);">↓</div><div class="activity-text"><div class="activity-msg">8 candidates exported as PDF</div><div class="activity-time">3 hr ago</div></div></div>
+              <div class="activity-item" style="border:none;"><div class="activity-icon" style="background:var(--red-soft);color:var(--red);">×</div><div class="activity-text"><div class="activity-msg">Meera Singh marked as Rejected</div><div class="activity-time">5 hr ago</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top candidates table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Top Candidates</div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('candidates',null)">View all candidates →</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Candidate</th><th>Position</th><th>Score</th><th>Skill Match</th><th>Status</th><th></th></tr></thead>
+              <tbody id="dash-cand-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /dashboard -->
+
+    <!-- ══ PAGE: JOB DESCRIPTIONS ══ -->
+    <div id="page-jobs" class="page">
+      <div class="page-inner">
+        <div class="filter-bar">
+          <div class="filter-search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input placeholder="Search job descriptions…" oninput="filterJDs(this.value)"/>
+          </div>
+          <select class="filter-select" onchange="filterJDsByStatus(this.value)">
+            <option value="All">All Status</option>
+            <option>Active</option>
+            <option>Draft</option>
+          </select>
+          <select class="filter-select">
+            <option>All Departments</option>
+            <option>AI/ML</option>
+            <option>Analytics</option>
+            <option>Engineering</option>
+            <option>Product</option>
+          </select>
+        </div>
+        <div id="jd-list"></div>
+        <button onclick="showPage('create-jd',null)" style="width:100%;border:2px dashed var(--border2);border-radius:var(--radius);padding:18px;text-align:center;cursor:pointer;background:transparent;font-family:var(--font);margin-top:8px;">
+          <div style="font-size:14px;font-weight:500;color:var(--accent);">+ Create New Job Description</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px;">Define required skills, experience level, and responsibilities</div>
+        </button>
+      </div>
+    </div><!-- /jobs -->
+
+    <!-- ══ PAGE: CREATE JD ══ -->
+    <div id="page-create-jd" class="page">
+      <div class="page-inner" style="max-width:800px;">
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">Job Details</div></div>
+          <div class="card-body">
+            <div class="grid-2" style="gap:14px;margin-bottom:14px;">
+              <div class="form-group" style="margin:0;"><label class="form-label">Job Title <span>*</span></label><input class="form-input" placeholder="e.g. Senior ML Engineer"/></div>
+              <div class="form-group" style="margin:0;"><label class="form-label">Department <span>*</span></label><select class="form-select"><option>AI/ML</option><option>Analytics</option><option>Engineering</option><option>Product</option><option>Design</option></select></div>
+            </div>
+            <div class="form-group"><label class="form-label">Job Description <span>*</span></label><textarea class="form-textarea" placeholder="Describe the role, key responsibilities, and what success looks like…" rows="4"></textarea></div>
+            <div class="grid-3" style="gap:14px;">
+              <div class="form-group" style="margin:0;"><label class="form-label">Min. Experience</label><input class="form-input" type="number" value="3" min="0" max="20" placeholder="Years"/></div>
+              <div class="form-group" style="margin:0;"><label class="form-label">Employment Type</label><select class="form-select"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option></select></div>
+              <div class="form-group" style="margin:0;"><label class="form-label">Location / Mode</label><select class="form-select"><option>Remote</option><option>On-site</option><option>Hybrid</option></select></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-16">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Required Skills &amp; Proficiency Thresholds</div>
+              <div class="card-sub">AI engine uses these thresholds to compute match scores via Cosine Similarity</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="skill-rows">
+              <div class="skill-req-row flex items-center gap-10 mb-12" style="margin-bottom:14px;">
+                <span style="font-size:13px;color:var(--text);width:180px;flex-shrink:0;">Python</span>
+                <input type="range" min="0" max="100" value="90" step="1" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%'"/>
+                <span style="font-size:13px;font-weight:500;color:var(--accent);width:42px;text-align:right;font-family:var(--mono);">90%</span>
+                <button onclick="removeSkillRow(this)" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;line-height:1;padding:0 4px;">×</button>
+              </div>
+              <div class="skill-req-row flex items-center gap-10 mb-12" style="margin-bottom:14px;">
+                <span style="font-size:13px;color:var(--text);width:180px;flex-shrink:0;">Machine Learning</span>
+                <input type="range" min="0" max="100" value="85" step="1" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%'"/>
+                <span style="font-size:13px;font-weight:500;color:var(--accent);width:42px;text-align:right;font-family:var(--mono);">85%</span>
+                <button onclick="removeSkillRow(this)" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;line-height:1;padding:0 4px;">×</button>
+              </div>
+              <div class="skill-req-row flex items-center gap-10 mb-12" style="margin-bottom:14px;">
+                <span style="font-size:13px;color:var(--text);width:180px;flex-shrink:0;">NLP / Text Processing</span>
+                <input type="range" min="0" max="100" value="80" step="1" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%'"/>
+                <span style="font-size:13px;font-weight:500;color:var(--accent);width:42px;text-align:right;font-family:var(--mono);">80%</span>
+                <button onclick="removeSkillRow(this)" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;line-height:1;padding:0 4px;">×</button>
+              </div>
+              <div class="skill-req-row flex items-center gap-10 mb-12" style="margin-bottom:14px;">
+                <span style="font-size:13px;color:var(--text);width:180px;flex-shrink:0;">SQL / Databases</span>
+                <input type="range" min="0" max="100" value="70" step="1" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%'"/>
+                <span style="font-size:13px;font-weight:500;color:var(--accent);width:42px;text-align:right;font-family:var(--mono);">70%</span>
+                <button onclick="removeSkillRow(this)" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;line-height:1;padding:0 4px;">×</button>
+              </div>
+              <div class="skill-req-row flex items-center gap-10" style="margin-bottom:4px;">
+                <span style="font-size:13px;color:var(--text);width:180px;flex-shrink:0;">Cloud (AWS/GCP/Azure)</span>
+                <input type="range" min="0" max="100" value="60" step="1" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%'"/>
+                <span style="font-size:13px;font-weight:500;color:var(--accent);width:42px;text-align:right;font-family:var(--mono);">60%</span>
+                <button onclick="removeSkillRow(this)" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;line-height:1;padding:0 4px;">×</button>
+              </div>
+            </div>
+            <div style="margin-top:16px;display:flex;align-items:center;gap:10px;">
+              <input id="new-skill-name" class="form-input" placeholder="Add a skill (e.g. TensorFlow)" style="max-width:220px;"/>
+              <button class="btn btn-ghost btn-sm" onclick="addSkillRow()">+ Add Skill</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">AI Matching Config</div></div>
+          <div class="card-body">
+            <div class="grid-2" style="gap:14px;">
+              <div class="form-group" style="margin:0;"><label class="form-label">Matching Algorithm</label><select class="form-select"><option>TF-IDF + Cosine Similarity</option><option>Word Embeddings (BERT)</option><option>Hybrid (TF-IDF + BERT)</option></select></div>
+              <div class="form-group" style="margin:0;"><label class="form-label">Shortlist Top-N</label><input class="form-input" type="number" value="5" min="1" max="50" placeholder="Candidates"/></div>
+            </div>
+            <div class="form-hint" style="margin-top:12px;">Parsed via spaCy + PyPDF / python-docx · Embeddings via scikit-learn</div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <button class="btn btn-ghost" onclick="showPage('jobs',null)">Cancel</button>
+          <div class="flex gap-8">
+            <button class="btn btn-secondary">Save as Draft</button>
+            <button class="btn btn-primary" onclick="showPage('jobs',null)">Publish JD</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /create-jd -->
+
+    <!-- ══ PAGE: UPLOAD ══ -->
+    <div id="page-upload" class="page">
+      <div class="page-inner">
+        <div class="grid-2" style="gap:16px;margin-bottom:16px;">
+          <!-- Drop zone -->
+          <div>
+            <div class="drop-zone mb-16" onclick="simulateUpload()">
+              <div class="drop-zone-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              <div style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:6px;">Drop resumes here to upload</div>
+              <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">PDF, DOCX · Batch via ZIP · Up to 100 files at once</div>
+              <div class="flex gap-8" style="justify-content:center;">
+                <button class="btn btn-primary" onclick="event.stopPropagation();">Browse Files</button>
+                <button class="btn btn-secondary" onclick="event.stopPropagation();">Upload ZIP</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Configuration</div>
+              </div>
+              <div class="card-body">
+                <div class="form-group"><label class="form-label">Match Against Job Description</label><select class="form-select"><option>Senior ML Engineer</option><option>Data Scientist</option><option>Backend Developer</option></select></div>
+                <div class="form-group"><label class="form-label">Processing Mode</label><select class="form-select"><option>Parse + Score (NLP + Cosine Sim.)</option><option>Parse Only (spaCy / PyPDF)</option><option>Score Only</option></select></div>
+                <div class="form-group" style="margin:0;"><label class="form-label">Shortlist Threshold</label>
+                  <div class="flex items-center gap-10 mt-8">
+                    <input type="range" min="0" max="100" value="80" step="5" style="flex:1;" oninput="document.getElementById('thresh-val').textContent=this.value+'%'"/>
+                    <span id="thresh-val" style="font-size:13px;font-weight:500;color:var(--accent);width:38px;font-family:var(--mono);">80%</span>
+                  </div>
+                  <div class="form-hint">Candidates scoring ≥ 80% are auto-shortlisted</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Upload queue + parsed preview -->
+          <div class="flex-col gap-16">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Upload Queue</div>
+                  <div class="card-sub">4 files · 3 complete · 1 processing</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="showPage('candidates',document.querySelector('.nav-item:nth-child(6)'))">View Results →</button>
+              </div>
+              <div class="card-body" style="padding:12px 16px;">
+                <div id="upload-queue-items"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Parsed Data Preview</div><div style="font-size:11px;color:var(--text3);">arjun_sharma_resume.pdf</div></div>
+              <div class="card-body">
+                <table style="width:100%;font-size:13px;border-collapse:collapse;">
+                  <tr><td style="color:var(--text3);padding:5px 0;width:90px;vertical-align:top;">Name</td><td style="color:var(--text);font-weight:500;padding:5px 0;">Arjun Sharma</td></tr>
+                  <tr><td style="color:var(--text3);padding:5px 0;">Email</td><td style="color:var(--text);padding:5px 0;">arjun.sharma@gmail.com</td></tr>
+                  <tr><td style="color:var(--text3);padding:5px 0;">Phone</td><td style="color:var(--text);padding:5px 0;">+91 98765 43210</td></tr>
+                  <tr><td style="color:var(--text3);padding:5px 0;">Experience</td><td style="color:var(--text);padding:5px 0;">5 years</td></tr>
+                  <tr><td style="color:var(--text3);padding:5px 0;vertical-align:top;">Education</td><td style="color:var(--text);padding:5px 0;">B.Tech CS, IIT Delhi (2019)</td></tr>
+                </table>
+                <div class="divider"></div>
+                <div class="section-title" style="font-size:12px;margin-bottom:8px;">Extracted Skills</div>
+                <div class="flex" style="flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+                  <span class="tag tag-accent">Python</span>
+                  <span class="tag tag-accent">TensorFlow</span>
+                  <span class="tag tag-accent">spaCy</span>
+                  <span class="tag tag-accent">SQL</span>
+                  <span class="tag tag-accent">Docker</span>
+                  <span class="tag tag-accent">AWS</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span style="font-size:11px;color:var(--text3);">Parsed via spaCy + PyPDF · 1.1s</span>
+                  <span class="badge badge-success"><span class="badge-dot"></span>Complete</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /upload -->
+
+    <!-- ══ PAGE: CANDIDATES ══ -->
+    <div id="page-candidates" class="page">
+      <div class="page-inner">
+        <div class="filter-bar">
+          <div class="filter-search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input placeholder="Search by name, skill, JD…" oninput="filterCandidates()"/>
+          </div>
+          <select class="filter-select" id="flt-jd" onchange="filterCandidates()">
+            <option value="All">All JDs</option>
+            <option>Senior ML Engineer</option>
+            <option>Data Scientist</option>
+            <option>Backend Developer</option>
+          </select>
+          <select class="filter-select" id="flt-st" onchange="filterCandidates()">
+            <option value="All">All Status</option>
+            <option>Shortlisted</option>
+            <option>Under Review</option>
+            <option>Rejected</option>
+          </select>
+          <select class="filter-select" id="flt-exp" onchange="filterCandidates()">
+            <option value="All">All Experience</option>
+            <option>0–2 yrs</option>
+            <option>3–5 yrs</option>
+            <option>5+ yrs</option>
+          </select>
+          <select class="filter-select" id="flt-sort" onchange="filterCandidates()">
+            <option value="score">Sort: Score ↓</option>
+            <option value="name">Sort: Name A-Z</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:48px;">#</th>
+                  <th>Candidate</th>
+                  <th>Score</th>
+                  <th>Skill Breakdown</th>
+                  <th>Exp</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="cand-table-body"></tbody>
+            </table>
+          </div>
+          <div class="flex justify-between items-center" style="padding:12px 16px;border-top:1px solid var(--border);">
+            <span id="cand-count" style="font-size:12px;color:var(--text3);">7 candidates · Click any row for full profile</span>
+            <div class="pagination">
+              <div class="pag-btn active">1</div>
+              <div class="pag-btn">2</div>
+              <div class="pag-btn">3</div>
+              <div class="pag-btn">›</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /candidates -->
+
+    <!-- ══ PAGE: CANDIDATE DETAIL ══ -->
+    <div id="page-detail" class="page">
+      <div class="page-inner" id="detail-content"></div>
+    </div><!-- /detail -->
+
+    <!-- ══ PAGE: REPORTS ══ -->
+    <div id="page-reports" class="page">
+      <div class="page-inner">
+        <!-- KPI strip -->
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px;">
+          <div class="metric-card" style="padding:12px 14px;"><div class="metric-label">Total Resumes</div><div class="metric-value" style="font-size:22px;">85</div></div>
+          <div class="metric-card" style="padding:12px 14px;"><div class="metric-label">Avg Proc. Time</div><div class="metric-value" style="font-size:22px;">1.2m</div></div>
+          <div class="metric-card" style="padding:12px 14px;"><div class="metric-label">Shortlist Rate</div><div class="metric-value" style="font-size:22px;">21%</div></div>
+          <div class="metric-card" style="padding:12px 14px;"><div class="metric-label">Top Score</div><div class="metric-value" style="font-size:22px;">94%</div></div>
+          <div class="metric-card" style="padding:12px 14px;"><div class="metric-label">Avg Score</div><div class="metric-value" style="font-size:22px;">72%</div></div>
+          <div class="metric-card" style="padding:12px 14px;"><div class="metric-label">Rejected</div><div class="metric-value" style="font-size:22px;">1</div></div>
+        </div>
+
+        <div class="grid-2" style="gap:16px;margin-bottom:16px;">
+          <!-- Funnel -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Recruitment Pipeline Funnel</div></div>
+            <div class="card-body">
+              <div class="funnel-step"><div class="funnel-label">Uploaded</div><div class="funnel-track"><div class="funnel-fill" style="width:100%;background:#1D9E75;"><span>85</span></div></div><div class="funnel-count">85</div><div class="funnel-pct">100%</div></div>
+              <div class="funnel-step"><div class="funnel-label">Parsed</div><div class="funnel-track"><div class="funnel-fill" style="width:100%;background:#5DCAA5;"><span>85</span></div></div><div class="funnel-count">85</div><div class="funnel-pct">100%</div></div>
+              <div class="funnel-step"><div class="funnel-label">Scored</div><div class="funnel-track"><div class="funnel-fill" style="width:98%;background:#378ADD;"><span>83</span></div></div><div class="funnel-count">83</div><div class="funnel-pct">97.6%</div></div>
+              <div class="funnel-step"><div class="funnel-label">Shortlisted</div><div class="funnel-track"><div class="funnel-fill" style="width:21%;background:#BA7517;"></div></div><div class="funnel-count">18</div><div class="funnel-pct">21.2%</div></div>
+              <div class="funnel-step" style="margin:0;"><div class="funnel-label">Interviewed</div><div class="funnel-track"><div class="funnel-fill" style="width:4.7%;background:#C0392B;"></div></div><div class="funnel-count">4</div><div class="funnel-pct">4.7%</div></div>
+            </div>
+          </div>
+          <!-- Skill gaps -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Common Skill Gaps</div>
+                <div class="card-sub">% of candidates who possess this skill</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="skill-bar"><div class="skill-bar-header"><span>NLP / Text Processing</span><span>44%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:44%;background:#C0392B;"></div></div></div>
+              <div class="skill-bar"><div class="skill-bar-header"><span>Deep Learning / PyTorch</span><span>51%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:51%;background:#E24B4A;"></div></div></div>
+              <div class="skill-bar"><div class="skill-bar-header"><span>Cloud Platforms</span><span>62%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:62%;background:#BA7517;"></div></div></div>
+              <div class="skill-bar"><div class="skill-bar-header"><span>Machine Learning</span><span>74%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:74%;background:#EF9F27;"></div></div></div>
+              <div class="skill-bar"><div class="skill-bar-header"><span>SQL / Databases</span><span>84%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:84%;background:#1D9E75;"></div></div></div>
+              <div class="skill-bar" style="margin:0;"><div class="skill-bar-header"><span>Python</span><span>91%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:91%;background:#1D9E75;"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- JD performance table -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Job Description Performance</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Job Description</th><th>Dept</th><th>Resumes</th><th>Avg Score</th><th>Shortlisted</th><th>Conversion</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:500;">Senior ML Engineer</td><td class="text-muted text-sm">AI/ML</td><td>24</td><td><span style="font-weight:600;color:#1D9E75;font-family:var(--mono);">87%</span></td><td>2</td><td class="text-sm text-muted font-mono">8.3%</td><td><span class="badge badge-success"><span class="badge-dot"></span>Active</span></td></tr>
+                <tr><td style="font-weight:500;">Data Scientist</td><td class="text-muted text-sm">Analytics</td><td>18</td><td><span style="font-weight:600;color:#BA7517;font-family:var(--mono);">72%</span></td><td>1</td><td class="text-sm text-muted font-mono">5.6%</td><td><span class="badge badge-success"><span class="badge-dot"></span>Active</span></td></tr>
+                <tr><td style="font-weight:500;">Backend Developer</td><td class="text-muted text-sm">Engineering</td><td>31</td><td><span style="font-weight:600;color:#C0392B;font-family:var(--mono);">64%</span></td><td>0</td><td class="text-sm text-muted font-mono">0%</td><td><span class="badge badge-success"><span class="badge-dot"></span>Active</span></td></tr>
+                <tr><td style="font-weight:500;">Product Manager</td><td class="text-muted text-sm">Product</td><td>12</td><td><span style="color:var(--text3);font-family:var(--mono);">—</span></td><td>0</td><td class="text-sm text-muted font-mono">—</td><td><span class="badge badge-neutral">Draft</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /reports -->
+
+    <!-- ══ PAGE: SETTINGS ══ -->
+    <div id="page-settings" class="page">
+      <div class="page-inner" style="max-width:720px;">
+        <!-- Profile -->
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">Profile Settings</div></div>
+          <div class="card-body">
+            <div class="flex items-center gap-16 mb-16">
+              <div class="avatar avatar-xl">HR</div>
+              <div>
+                <button class="btn btn-secondary btn-sm">Change Avatar</button>
+                <div class="form-hint" style="margin-top:6px;">JPG or PNG · max 2MB</div>
+              </div>
+            </div>
+            <div class="grid-2" style="gap:14px;">
+              <div class="form-group" style="margin:0;"><label class="form-label">First Name</label><input class="form-input" value="Admin"/></div>
+              <div class="form-group" style="margin:0;"><label class="form-label">Last Name</label><input class="form-input" value="User"/></div>
+              <div class="form-group" style="margin:0;"><label class="form-label">Email</label><input class="form-input" type="email" value="admin@company.com"/></div>
+              <div class="form-group" style="margin:0;"><label class="form-label">Role</label><select class="form-select"><option>HR Manager</option><option>Admin</option><option>Recruiter</option></select></div>
+            </div>
+            <div style="margin-top:16px;"><button class="btn btn-primary btn-sm">Save Changes</button></div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">Notification Preferences</div></div>
+          <div class="card-body">
+            <div class="settings-row">
+              <div><div style="font-size:13px;font-weight:500;">Resume processed notification</div><div class="text-sm text-muted mt-4">Notify when batch resume parsing completes</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div><div style="font-size:13px;font-weight:500;">New shortlist alert</div><div class="text-sm text-muted mt-4">Email when a candidate crosses the score threshold</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div><div style="font-size:13px;font-weight:500;">Weekly digest report</div><div class="text-sm text-muted mt-4">Summary of all activity sent every Monday</div></div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div><div style="font-size:13px;font-weight:500;">Processing errors</div><div class="text-sm text-muted mt-4">Notify when a file fails to parse</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Config -->
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">AI Engine Configuration</div></div>
+          <div class="card-body">
+            <div class="grid-2" style="gap:14px;margin-bottom:14px;">
+              <div class="form-group" style="margin:0;"><label class="form-label">Default Algorithm</label><select class="form-select"><option>TF-IDF + Cosine Similarity</option><option>Word Embeddings (BERT)</option><option>Hybrid</option></select></div>
+              <div class="form-group" style="margin:0;"><label class="form-label">NLP Library</label><select class="form-select"><option>spaCy (en_core_web_lg)</option><option>spaCy (en_core_web_sm)</option><option>NLTK</option></select></div>
+            </div>
+            <div class="form-group" style="margin:0;"><label class="form-label">Default Shortlist Threshold</label>
+              <div class="flex items-center gap-10 mt-8">
+                <input type="range" min="50" max="100" value="80" step="5" style="flex:1;" oninput="document.getElementById('global-thresh').textContent=this.value+'%'"/>
+                <span id="global-thresh" style="font-size:13px;font-weight:500;color:var(--accent);width:38px;font-family:var(--mono);">80%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="card" style="border-color:rgba(192,57,43,0.25);">
+          <div class="card-header" style="background:var(--red-soft);border-color:rgba(192,57,43,0.2);"><div class="card-title" style="color:var(--red);">Danger Zone</div></div>
+          <div class="card-body">
+            <div class="settings-row">
+              <div><div style="font-size:13px;font-weight:500;">Clear all candidate data</div><div class="text-sm text-muted mt-4">Permanently delete all uploaded resumes and scores</div></div>
+              <button class="btn btn-danger btn-sm">Clear Data</button>
+            </div>
+            <div class="settings-row" style="border:none;">
+              <div><div style="font-size:13px;font-weight:500;">Reset platform</div><div class="text-sm text-muted mt-4">Remove all JDs, candidates, and history. Cannot be undone.</div></div>
+              <button class="btn btn-danger btn-sm">Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /settings -->
+
+  </main>
+</div><!-- /#app -->
+
+<script>
+/* ── DATA ── */
+const CANDIDATES = [
+  {n:'Arjun Sharma',ab:'AS',jd:'Senior ML Engineer',sc:94,exp:'5 yrs',st:'Shortlisted',email:'arjun.sharma@gmail.com',phone:'+91 98765 43210',edu:'B.Tech CS, IIT Delhi (2019)',sk:{Python:95,ML:90,NLP:88,SQL:75},hist:[{r:'ML Engineer',c:'TechCorp India',d:'2021–Present'},{r:'Data Analyst',c:'Analytics Pvt Ltd',d:'2019–2021'}],tags:['TensorFlow','PyTorch','spaCy','scikit-learn','AWS','Docker','FastAPI']},
+  {n:'Priya Nair',ab:'PN',jd:'Senior ML Engineer',sc:87,exp:'4 yrs',st:'Shortlisted',email:'priya.nair@outlook.com',phone:'+91 87654 32109',edu:'M.Tech AI, IIT Bombay (2020)',sk:{Python:88,ML:85,NLP:72,SQL:90},hist:[{r:'Senior Data Scientist',c:'DataWave Solutions',d:'2022–Present'},{r:'ML Intern',c:'Infosys',d:'2020–2022'}],tags:['Keras','BERT','Pandas','PostgreSQL','GCP','Airflow']},
+  {n:'Rohit Das',ab:'RD',jd:'Senior ML Engineer',sc:79,exp:'3 yrs',st:'Under Review',email:'rohit.das@yahoo.com',phone:'+91 76543 21098',edu:'B.E. CS, NIT Trichy (2021)',sk:{Python:80,ML:78,NLP:65,SQL:82},hist:[{r:'Data Scientist',c:'StartupAI',d:'2021–Present'}],tags:['scikit-learn','Flask','MySQL','Tableau','Git']},
+  {n:'Sneha Gupta',ab:'SG',jd:'Data Scientist',sc:76,exp:'4 yrs',st:'Under Review',email:'sneha.gupta@gmail.com',phone:'+91 65432 10987',edu:'M.Sc Statistics, Delhi Univ (2020)',sk:{Python:85,ML:70,NLP:60,SQL:88},hist:[{r:'Business Analyst',c:'MNC Corp',d:'2020–Present'},{r:'Statistician',c:'Research Lab',d:'2019–2020'}],tags:['R','Python','Tableau','SQL','Excel','Power BI']},
+  {n:'Aditya Kumar',ab:'AK',jd:'Data Scientist',sc:68,exp:'2 yrs',st:'Under Review',email:'aditya.k@gmail.com',phone:'+91 54321 09876',edu:'B.Tech IT, VIT Vellore (2022)',sk:{Python:70,ML:65,NLP:55,SQL:75},hist:[{r:'Data Analyst',c:'Fintech Startup',d:'2022–Present'}],tags:['Python','Pandas','NumPy','Matplotlib','MySQL']},
+  {n:'Meera Singh',ab:'MS',jd:'Backend Developer',sc:52,exp:'3 yrs',st:'Rejected',email:'meera.singh@yahoo.com',phone:'+91 43210 98765',edu:'BCA, Pune University (2021)',sk:{Python:60,ML:40,NLP:30,SQL:85},hist:[{r:'Backend Developer',c:'IT Services Ltd',d:'2021–Present'}],tags:['Python','Django','PostgreSQL','REST APIs','Linux']},
+  {n:'Karan Mehta',ab:'KM',jd:'Backend Developer',sc:61,exp:'2 yrs',st:'Under Review',email:'karan.m@gmail.com',phone:'+91 32109 87654',edu:'B.Tech CS, Amity Univ (2022)',sk:{Python:65,ML:50,NLP:35,SQL:80},hist:[{r:'Software Engineer',c:'Product Co.',d:'2022–Present'}],tags:['Python','FastAPI','MongoDB','Redis','Docker']},
+];
+const JD_REQS = {'Senior ML Engineer':{Python:90,ML:85,NLP:80,SQL:70},'Data Scientist':{Python:85,ML:80,NLP:60,SQL:85},'Backend Developer':{Python:75,ML:30,NLP:20,SQL:90}};
+const JD_LIST = [
+  {t:'Senior ML Engineer',dept:'AI/ML',cnt:24,st:'Active',dt:'Apr 15, 2025',sl:2,avg:87,desc:'Design, build and deploy ML models at scale. Strong NLP, deep learning, and cloud skills required.'},
+  {t:'Data Scientist',dept:'Analytics',cnt:18,st:'Active',dt:'Apr 10, 2025',sl:1,avg:72,desc:'Drive data-driven product decisions. Proficiency in statistical modelling and BI tools required.'},
+  {t:'Backend Developer',dept:'Engineering',cnt:31,st:'Active',dt:'Apr 5, 2025',sl:0,avg:64,desc:'Build scalable REST APIs and backend services. Python/FastAPI and PostgreSQL experience required.'},
+  {t:'Product Manager',dept:'Product',cnt:12,st:'Draft',dt:'Apr 20, 2025',sl:0,avg:0,desc:'Lead cross-functional teams to ship delightful products. 3+ years of PM experience required.'},
+];
+
+let currentCandidate = 0;
+
+/* ── SCORE HELPERS ── */
+function scoreColor(s){return s>=80?'#1D9E75':s>=60?'#BA7517':'#C0392B';}
+function badgeClass(st){return {Shortlisted:'badge-success','Under Review':'badge-warning',Rejected:'badge-danger',Active:'badge-success',Draft:'badge-neutral'}[st]||'badge-neutral';}
+
+function buildRing(sc, size=44){
+  const r=size*0.38, ci=+(2*Math.PI*r).toFixed(2), off=+(ci*(1-sc/100)).toFixed(2);
+  const col=scoreColor(sc);
+  const fs=Math.round(size*0.22);
+  return `<div style="position:relative;width:${size}px;height:${size}px;flex-shrink:0;">
+    <svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="3.5" stroke="rgba(0,0,0,0.08)"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="3.5" stroke-dasharray="${ci}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+    </svg>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:600;color:${col};font-family:var(--mono);">${sc}%</div>
+  </div>`;
+}
+
+function buildBigRing(sc){
+  const r=44, ci=+(2*Math.PI*r).toFixed(2), off=+(ci*(1-sc/100)).toFixed(2), col=scoreColor(sc);
+  const rec=sc>=85?'Highly Recommended':sc>=70?'Recommended':sc>=55?'Worth Considering':'Not Recommended';
+  const [rb,rf]=sc>=85?['var(--accent-soft)','var(--accent-mid)']:sc>=70?['var(--accent-soft)','var(--accent)']:sc>=55?['var(--amber-soft)','var(--amber)']:['var(--red-soft)','var(--red)'];
+  return `<div style="text-align:center;">
+    <div style="position:relative;width:100px;height:100px;margin:0 auto 10px;">
+      <svg width="100" height="100" style="transform:rotate(-90deg);">
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke-width="6" stroke="rgba(0,0,0,0.07)"/>
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="6" stroke-dasharray="${ci}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <span style="font-size:24px;font-weight:700;color:${col};font-family:var(--mono);line-height:1;">${sc}%</span>
+        <span style="font-size:10px;color:var(--text3);margin-top:2px;">match</span>
+      </div>
+    </div>
+    <span style="background:${rb};color:${rf};padding:4px 14px;border-radius:100px;font-size:12px;font-weight:500;">${rec}</span>
+  </div>`;
+}
+
+function buildSkillBar2(lbl,sc,req){
+  const col=scoreColor(sc), hit=sc>=req, near=sc>=req*0.85;
+  const[sb,sf]=hit?['var(--accent-soft)','var(--accent-mid)']:near?['var(--amber-soft)','#7A4F00']:['var(--red-soft)','var(--red)'];
+  const lbl2=hit?'✓ Met':near?'≈ Close':'✗ Gap';
+  return `<div class="compare-bar">
+    <div class="compare-bar-header">
+      <span class="compare-bar-label">${lbl}</span>
+      <div class="compare-bar-vals">
+        <span style="font-family:var(--mono);">${sc}% <span style="color:var(--text3);">/ req ${req}%</span></span>
+        <span style="background:${sb};color:${sf};padding:2px 9px;border-radius:100px;font-size:11px;font-weight:500;">${lbl2}</span>
+      </div>
+    </div>
+    <div class="compare-bar-track">
+      <div class="compare-bar-fill" style="width:${Math.min(sc,100)}%;background:${col};"></div>
+      <div class="compare-bar-req" style="left:calc(${req}% - 1px);"></div>
+    </div>
+  </div>`;
+}
+
+function rankBadge(i){
+  const cfg=[[0,'#FAC775','#6B3B00'],[1,'#D3D1C7','#3A3A3A'],[2,'#F5C4B3','#7A3010']];
+  const found=cfg.find(x=>x[0]===i);
+  const [,bg,fg]=found||[i,'var(--surface2)','var(--text2)'];
+  return `<div style="width:26px;height:26px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${fg};">${i+1}</div>`;
+}
+
+function avatarHtml(ab, size='sm'){
+  const sz={sm:28,md:36,lg:48,xl:60}[size]||28;
+  const fs=Math.round(sz*0.36);
+  return `<div class="avatar" style="width:${sz}px;height:${sz}px;font-size:${fs}px;">${ab}</div>`;
+}
+
+/* ── NAVIGATION ── */
+let allTopbars = ['dashboard','jobs','create-jd','upload','candidates','detail','reports','settings'];
+let currentPage = 'dashboard';
+
+function showPage(page, navEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  allTopbars.forEach(id=>{const el=document.getElementById('topbar-'+id);if(el)el.style.display='none';});
+  const pg = document.getElementById('page-'+page);
+  if(pg){ pg.classList.add('active'); pg.classList.add('animate-in'); setTimeout(()=>pg.classList.remove('animate-in'),400); }
+  const tb = document.getElementById('topbar-'+page);
+  if(tb) tb.style.display='flex';
+
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
+  else {
+    const map={'create-jd':'jobs',detail:'candidates'};
+    const target=map[page]||page;
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if(n.onclick&&n.onclick.toString().includes("'"+target+"'")) n.classList.add('active');
+    });
+  }
+  currentPage = page;
+  if(page==='dashboard') buildDashTable();
+  if(page==='candidates') buildCandTable();
+  if(page==='jobs') buildJDList();
+  if(page==='upload') buildUploadQueue();
+}
+
+/* ── LOGIN / LOGOUT ── */
+function doLogin(){
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app').style.display='flex';
+  showPage('dashboard', document.querySelector('.nav-item'));
+}
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+}
+
+/* ── NOTIFICATIONS ── */
+function toggleNotif(){document.getElementById('notif-panel').classList.toggle('open');}
+document.addEventListener('click',e=>{const np=document.getElementById('notif-panel');if(np&&np.classList.contains('open')&&!e.target.closest('.notif-btn')&&!e.target.closest('.notif-panel'))np.classList.remove('open');});
+
+/* ── DASHBOARD TABLE ── */
+function buildDashTable(){
+  const tbody=document.getElementById('dash-cand-table');
+  if(!tbody)return;
+  tbody.innerHTML = CANDIDATES.slice(0,5).map((c,i)=>`<tr style="cursor:pointer;" onclick="openDetail(${i})">
+    <td>${rankBadge(i)}</td>
+    <td><div class="flex items-center gap-8">${avatarHtml(c.ab,'sm')}<div><div style="font-weight:500;">${c.n}</div><div class="text-sm text-muted">${c.jd}</div></div></div></td>
+    <td>${buildRing(c.sc,40)}</td>
+    <td><div style="min-width:100px;">${Object.entries(c.sk).slice(0,1).map(([k,v])=>`<div class="skill-bar" style="margin:0;"><div class="skill-bar-header"><span>${k}</span><span>${v}%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:${v}%;background:${scoreColor(v)};"></div></div></div>`).join('')}</div></td>
+    <td class="text-sm text-muted">${c.exp}</td>
+    <td><span class="badge ${badgeClass(c.st)}">${c.st==='Shortlisted'||c.st==='Active'?'<span class="badge-dot"></span>':''} ${c.st}</span></td>
+    <td><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openDetail(${i})">Profile</button></td>
+  </tr>`).join('');
+}
+
+/* ── CANDIDATES TABLE ── */
+function buildCandTable(list){
+  const tbody=document.getElementById('cand-table-body');
+  if(!tbody)return;
+  const data=list||CANDIDATES;
+  document.getElementById('cand-count').textContent=`${data.length} candidates · Click any row for full profile`;
+  tbody.innerHTML = data.length ? data.map((c,i)=>{
+    const ri=CANDIDATES.indexOf(c);
+    return `<tr style="cursor:pointer;" onclick="openDetail(${ri})">
+      <td>${rankBadge(i)}</td>
+      <td><div class="flex items-center gap-10">${avatarHtml(c.ab,'sm')}<div><div style="font-weight:500;">${c.n}</div><div class="text-sm text-muted">${c.jd}</div></div></div></td>
+      <td>${buildRing(c.sc,44)}</td>
+      <td><div style="min-width:110px;">${Object.entries(c.sk).slice(0,2).map(([k,v])=>`<div class="skill-bar" style="margin-bottom:5px;"><div class="skill-bar-header"><span>${k}</span><span>${v}%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:${v}%;background:${scoreColor(v)};"></div></div></div>`).join('')}</div></td>
+      <td class="text-sm text-muted">${c.exp}</td>
+      <td><span class="badge ${badgeClass(c.st)}">${c.st==='Shortlisted'?'<span class="badge-dot"></span>':''} ${c.st}</span></td>
+      <td><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openDetail(${ri})">Details</button></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);font-size:13px;">No candidates match the selected filters.</td></tr>`;
+}
+
+function filterCandidates(){
+  const jd=document.getElementById('flt-jd').value;
+  const st=document.getElementById('flt-st').value;
+  const exp=document.getElementById('flt-exp').value;
+  const sort=document.getElementById('flt-sort').value;
+  let list=[...CANDIDATES];
+  if(jd!=='All') list=list.filter(c=>c.jd===jd);
+  if(st!=='All') list=list.filter(c=>c.st===st);
+  if(exp!=='All'){
+    if(exp==='0–2 yrs') list=list.filter(c=>parseInt(c.exp)<=2);
+    else if(exp==='3–5 yrs') list=list.filter(c=>parseInt(c.exp)>=3&&parseInt(c.exp)<=5);
+    else if(exp==='5+ yrs') list=list.filter(c=>parseInt(c.exp)>5);
+  }
+  if(sort==='score') list.sort((a,b)=>b.sc-a.sc);
+  else list.sort((a,b)=>a.n.localeCompare(b.n));
+  buildCandTable(list);
+}
+
+/* ── JD LIST ── */
+function buildJDList(filter){
+  const container=document.getElementById('jd-list');
+  if(!container)return;
+  let list=filter?JD_LIST.filter(j=>j.t.toLowerCase().includes(filter.toLowerCase())):JD_LIST;
+  container.innerHTML=list.map((jd,i)=>`
+    <div class="jd-card">
+      <div class="jd-card-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      </div>
+      <div class="jd-card-meta">
+        <div class="jd-card-title">${jd.t}</div>
+        <div class="jd-card-sub">${jd.dept} · ${jd.cnt} resumes · ${jd.sl} shortlisted · Created ${jd.dt}${jd.avg>0?' · Avg: <b style="color:var(--text);">'+jd.avg+'%</b>':''}</div>
+      </div>
+      <div class="jd-card-actions">
+        <span class="badge ${badgeClass(jd.st)}">${jd.st==='Active'?'<span class="badge-dot"></span>':''} ${jd.st}</span>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('candidates',null)">View →</button>
+        <button class="btn btn-secondary btn-sm" onclick="showPage('create-jd',null)">Edit</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red);">Delete</button>
+      </div>
+    </div>`).join('');
+}
+function filterJDs(val){buildJDList(val);}
+function filterJDsByStatus(val){
+  const list=val==='All'?JD_LIST:JD_LIST.filter(j=>j.st===val);
+  document.getElementById('jd-list').innerHTML=list.map(jd=>`<div class="jd-card"><div class="jd-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="jd-card-meta"><div class="jd-card-title">${jd.t}</div><div class="jd-card-sub">${jd.dept} · ${jd.cnt} resumes · Created ${jd.dt}</div></div><div class="jd-card-actions"><span class="badge ${badgeClass(jd.st)}">${jd.st==='Active'?'<span class="badge-dot"></span>':''} ${jd.st}</span><button class="btn btn-ghost btn-sm">View →</button><button class="btn btn-secondary btn-sm">Edit</button></div></div>`).join('');
+}
+
+/* ── UPLOAD QUEUE ── */
+function buildUploadQueue(){
+  const c=document.getElementById('upload-queue-items');
+  if(!c)return;
+  const files=[{n:'arjun_sharma_resume.pdf',s:'248 KB',p:100,ty:'PDF',col:['#FDECEA','#C0392B']},{n:'priya_nair_cv.docx',s:'185 KB',p:100,ty:'DOC',col:['#E6F1FB','#185FA5']},{n:'rohit_das_resume.pdf',s:'312 KB',p:100,ty:'PDF',col:['#FDECEA','#C0392B']},{n:'batch_upload_Apr23.zip',s:'4.2 MB',p:76,ty:'ZIP',col:['var(--surface2)','var(--text2)']}];
+  c.innerHTML=files.map(f=>`<div class="flex items-center gap-10" style="padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;">
+    <div style="width:32px;height:32px;border-radius:7px;background:${f.col[0]};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${f.col[1]};flex-shrink:0;">${f.ty}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.n}</div>
+      <div class="flex items-center gap-8" style="margin-top:4px;">
+        <div class="progress-track" style="flex:1;"><div class="progress-fill" style="width:${f.p}%;background:${f.p===100?'var(--accent)':'var(--amber)'}"></div></div>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);">${f.p}%</span>
+      </div>
+    </div>
+    <span style="font-size:11px;color:var(--text3);">${f.s}</span>
+    <span style="font-size:14px;font-weight:600;color:${f.p===100?'var(--accent)':'var(--amber)'};">${f.p===100?'✓':'…'}</span>
+  </div>`).join('');
+}
+
+/* ── DETAIL PAGE ── */
+function openDetail(idx){
+  currentCandidate=idx;
+  const c=CANDIDATES[idx];
+  document.getElementById('detail-topbar-name').textContent=c.n;
+  const reqs=JD_REQS[c.jd]||{};
+  const rec=c.sc>=85?'Highly Recommended':c.sc>=70?'Recommended':c.sc>=55?'Worth Considering':'Not Recommended';
+  const [rb,rf]=c.sc>=85?['var(--accent-soft)','var(--accent-mid)']:c.sc>=70?['var(--accent-soft)','var(--accent)']:c.sc>=55?['var(--amber-soft)','var(--amber)']:['var(--red-soft)','var(--red)'];
+  const matchedCount=Object.entries(reqs).filter(([k,v])=>(c.sk[k]||0)>=v).length;
+  document.getElementById('detail-content').innerHTML=`
+    <!-- Header card -->
+    <div class="card mb-16">
+      <div class="card-body">
+        <div class="flex items-center gap-16">
+          ${avatarHtml(c.ab,'xl')}
+          <div style="flex:1;">
+            <div class="flex items-center gap-12 mb-4">
+              <h2 style="font-size:20px;font-weight:700;color:var(--text);">${c.n}</h2>
+              <span class="badge ${badgeClass(c.st)}">${c.st==='Shortlisted'?'<span class="badge-dot"></span>':''} ${c.st}</span>
+            </div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">${c.jd} · ${c.exp} experience · ${c.edu}</div>
+            <div class="flex" style="flex-wrap:wrap;gap:6px;">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px;text-align:center;flex-shrink:0;">
+            <div class="profile-stat"><div class="profile-stat-value" style="color:${scoreColor(c.sc)};">${c.sc}%</div><div class="profile-stat-label">Match Score</div></div>
+            <div class="profile-stat"><div class="profile-stat-value">${matchedCount}/${Object.keys(reqs).length}</div><div class="profile-stat-label">Skills Met</div></div>
+            <div class="profile-stat"><div class="profile-stat-value">${c.exp}</div><div class="profile-stat-label">Experience</div></div>
+            <div class="profile-stat"><div class="profile-stat-value">${c.hist.length}</div><div class="profile-stat-label">Jobs Held</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:16px;">
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- AI Score Card -->
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">AI Match Analysis</div></div>
+          <div class="card-body">
+            <div class="flex gap-16 items-center mb-16">
+              ${buildBigRing(c.sc)}
+              <div style="flex:1;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;">
+                  <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Skills Matched</div><div style="font-size:16px;font-weight:600;">${matchedCount} / ${Object.keys(reqs).length}</div></div>
+                  <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Algorithm</div><div style="font-size:12px;font-weight:500;">Cosine Sim.</div></div>
+                  <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">NLP Parser</div><div style="font-size:12px;font-weight:500;">spaCy + PyPDF</div></div>
+                  <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Confidence</div><div style="font-size:12px;font-weight:500;color:${scoreColor(c.sc)};">High</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="section-title">Skill Match vs. JD Requirements</div>
+            ${Object.entries(reqs).map(([k,v])=>buildSkillBar2(k,c.sk[k]||0,v)).join('')}
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Vertical line marks the JD requirement threshold for each skill</div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">Contact Information</div></div>
+          <div class="card-body">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tr><td style="color:var(--text3);padding:6px 0;width:90px;vertical-align:top;">Email</td><td style="padding:6px 0;"><a href="mailto:${c.email}" style="color:var(--blue);text-decoration:none;">${c.email}</a></td></tr>
+              <tr><td style="color:var(--text3);padding:6px 0;">Phone</td><td style="padding:6px 0;">${c.phone}</td></tr>
+              <tr><td style="color:var(--text3);padding:6px 0;">Education</td><td style="padding:6px 0;">${c.edu}</td></tr>
+              <tr><td style="color:var(--text3);padding:6px 0;">Applied For</td><td style="padding:6px 0;font-weight:500;">${c.jd}</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+        <!-- Work history -->
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">Work History</div></div>
+          <div class="card-body">
+            ${c.hist.map((h,i)=>`<div class="timeline-item${i===c.hist.length-1?' timeline-item-last':''}"><div class="timeline-dot"></div><div class="timeline-body"><div class="timeline-title">${h.r}</div><div class="timeline-sub">${h.c}</div><div class="timeline-date">${h.d}</div></div></div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Skills detail -->
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">All Skill Scores</div></div>
+          <div class="card-body">
+            ${Object.entries(c.sk).map(([k,v])=>`<div class="skill-bar"><div class="skill-bar-header"><span>${k}</span><span>${v}%</span></div><div class="skill-bar-track"><div class="skill-bar-fill" style="width:${v}%;background:${scoreColor(v)};"></div></div></div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Extracted keywords -->
+        <div class="card mb-16">
+          <div class="card-header"><div class="card-title">Extracted Keywords &amp; Tools</div></div>
+          <div class="card-body">
+            <div class="flex" style="flex-wrap:wrap;gap:8px;">${c.tags.map(t=>`<span class="tag tag-accent">${t}</span>`).join('')}</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recruiter Actions</div></div>
+          <div class="card-body">
+            <div class="flex" style="flex-direction:column;gap:8px;">
+              <button class="btn btn-primary" style="justify-content:center;" onclick="updateStatus('Shortlisted')">✓ Move to Shortlist</button>
+              <button class="btn btn-secondary" style="justify-content:center;" onclick="updateStatus('Under Review')">↻ Keep Under Review</button>
+              <button class="btn btn-danger" style="justify-content:center;" onclick="updateStatus('Rejected')">✗ Reject Candidate</button>
+              <div class="divider"></div>
+              <button class="btn btn-ghost" style="justify-content:center;">📎 Download Resume</button>
+              <button class="btn btn-ghost" style="justify-content:center;" onclick="openInterviewModal()">📅 Schedule Interview</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  showPage('detail', null);
+}
+
+function updateStatus(st){
+  CANDIDATES[currentCandidate].st=st;
+  // Update badge in header card
+  const badge=document.querySelector('#detail-content .card:first-child .badge');
+  if(badge){badge.className='badge '+badgeClass(st);badge.innerHTML=(st==='Shortlisted'?'<span class="badge-dot"></span> ':'')+st;}
+  const msgs={Shortlisted:'✓ Candidate shortlisted!','Under Review':'↻ Moved back to Under Review',Rejected:'Candidate marked as rejected'};
+  const types={Shortlisted:'success','Under Review':'info',Rejected:'warning'};
+  showToast(msgs[st]||'Status updated',types[st]||'success');
+}
+
+/* ── SKILL ROW HELPERS ── */
+function removeSkillRow(btn){btn.closest('.skill-req-row').remove();}
+function addSkillRow(){
+  const input=document.getElementById('new-skill-name');
+  const val=input.value.trim(); if(!val)return;
+  const row=document.createElement('div');
+  row.className='skill-req-row flex items-center gap-10';
+  row.style.marginBottom='14px';
+  row.innerHTML=`<span style="font-size:13px;color:var(--text);width:180px;flex-shrink:0;">${val}</span>
+    <input type="range" min="0" max="100" value="70" step="1" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%'"/>
+    <span style="font-size:13px;font-weight:500;color:var(--accent);width:42px;text-align:right;font-family:var(--mono);">70%</span>
+    <button onclick="removeSkillRow(this)" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;line-height:1;padding:0 4px;">×</button>`;
+  document.getElementById('skill-rows').appendChild(row);
+  input.value='';
+}
+
+/* ── GLOBAL SEARCH ── */
+let searchDropdown=null;
+function globalSearch(q){
+  if(searchDropdown)searchDropdown.remove();
+  if(!q.trim())return;
+  const results=[
+    ...CANDIDATES.filter(c=>c.n.toLowerCase().includes(q.toLowerCase())||c.jd.toLowerCase().includes(q.toLowerCase())).map(c=>({type:'candidate',label:c.n,sub:c.jd+' · '+c.sc+'%',idx:CANDIDATES.indexOf(c)})),
+    ...JD_LIST.filter(j=>j.t.toLowerCase().includes(q.toLowerCase())).map(j=>({type:'jd',label:j.t,sub:j.dept+' · '+j.cnt+' resumes'})),
+  ].slice(0,6);
+  if(!results.length)return;
+  searchDropdown=document.createElement('div');
+  searchDropdown.style.cssText='position:absolute;top:52px;left:50%;transform:translateX(-50%);width:340px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:var(--shadow);z-index:300;overflow:hidden;';
+  searchDropdown.innerHTML=results.map(r=>`<div onclick="searchGo('${r.type}',${r.idx||0})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:7px;background:${r.type==='candidate'?'var(--accent-soft)':'var(--blue-soft)'};display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">${r.type==='candidate'?'👤':'📄'}</div>
+    <div><div style="font-size:13px;font-weight:500;color:var(--text);">${r.label}</div><div style="font-size:11px;color:var(--text3);">${r.sub}</div></div>
+  </div>`).join('');
+  document.querySelector('.topbar').style.position='relative';
+  document.querySelector('.topbar').appendChild(searchDropdown);
+  setTimeout(()=>document.addEventListener('click',closeSearch,{once:true}),100);
+}
+function closeSearch(){if(searchDropdown){searchDropdown.remove();searchDropdown=null;}}
+function searchGo(type,idx){
+  closeSearch();
+  if(type==='candidate'){openDetail(idx);}
+  else{showPage('jobs',document.querySelectorAll('.nav-item')[1]);}
+}
+function globalSearchGo(q){if(q.trim()){showPage('candidates',document.querySelectorAll('.nav-item')[3]);setTimeout(()=>{const inp=document.querySelector('#page-candidates .filter-search input');if(inp){inp.value=q;filterCandidates();}},100);}}
+
+/* ── TOAST ── */
+function showToast(msg, type='success'){
+  let wrap=document.getElementById('toast-wrap');
+  if(!wrap){wrap=document.createElement('div');wrap.id='toast-wrap';wrap.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;';document.body.appendChild(wrap);}
+  const t=document.createElement('div');
+  const colors={success:['#E1F5EE','#0F6E56','#1D9E75'],error:['#FDECEA','#C0392B','#C0392B'],info:['#E6F1FB','#185FA5','#185FA5'],warning:['#FAEEDA','#7A4F00','#BA7517']};
+  const [bg,fg,bdr]=colors[type]||colors.success;
+  t.style.cssText=`background:${bg};color:${fg};border:1px solid ${bdr}33;border-left:3px solid ${bdr};border-radius:8px;padding:10px 16px;font-size:13px;font-weight:500;font-family:var(--font);box-shadow:0 4px 16px rgba(0,0,0,0.1);min-width:220px;max-width:320px;animation:slideIn .2s ease;`;
+  t.textContent=msg;
+  wrap.appendChild(t);
+  setTimeout(()=>{t.style.animation='slideOut .2s ease forwards';setTimeout(()=>t.remove(),200);},3000);
+}
+const toastStyle=document.createElement('style');
+toastStyle.textContent='@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}@keyframes slideOut{from{opacity:1;transform:none}to{opacity:0;transform:translateX(20px)}}';
+document.head.appendChild(toastStyle);
+
+/* ── DARK MODE ── */
+let darkMode=false;
+function toggleDark(){
+  darkMode=!darkMode;
+  const r=document.documentElement.style;
+  if(darkMode){
+    r.setProperty('--bg','#121210');r.setProperty('--surface','#1C1B19');r.setProperty('--surface2','#242320');
+    r.setProperty('--border','rgba(255,255,255,0.08)');r.setProperty('--border2','rgba(255,255,255,0.13)');
+    r.setProperty('--text','#F0EFE9');r.setProperty('--text2','#9A9890');r.setProperty('--text3','#5E5D58');
+    document.getElementById('dark-btn').textContent='☀';
+    showToast('Dark mode enabled','info');
+  } else {
+    r.setProperty('--bg','#F5F4F0');r.setProperty('--surface','#FFFFFF');r.setProperty('--surface2','#F0EFE9');
+    r.setProperty('--border','rgba(0,0,0,0.09)');r.setProperty('--border2','rgba(0,0,0,0.14)');
+    r.setProperty('--text','#1A1917');r.setProperty('--text2','#6B6960');r.setProperty('--text3','#A8A69E');
+    document.getElementById('dark-btn').textContent='🌙';
+    showToast('Light mode enabled','info');
+  }
+}
+
+/* ── SIMULATE UPLOAD ── */
+let uploadActive=false;
+function simulateUpload(){
+  if(uploadActive)return;
+  uploadActive=true;
+  showToast('Uploading & parsing resumes…','info');
+  setTimeout(()=>{showToast('Parsing complete — 4 files processed','success');uploadActive=false;},2200);
+}
+
+/* ── INTERVIEW MODAL ── */
+function openInterviewModal(name){
+  let m=document.getElementById('interview-modal');
+  if(!m){
+    m=document.createElement('div');m.id='interview-modal';
+    m.style.cssText='position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;animation:fadeIn .15s ease;';
+    m.innerHTML=`<div style="background:var(--surface);border-radius:16px;padding:28px;width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.18);animation:slideIn .2s ease;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="font-size:16px;font-weight:600;color:var(--text);">Schedule Interview</div>
+        <button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
+      </div>
+      <div id="modal-cand-name" style="font-size:13px;font-weight:500;color:var(--accent);margin-bottom:20px;padding:8px 12px;background:var(--accent-soft);border-radius:8px;"></div>
+      <div class="form-group"><label class="form-label">Interview Date <span style="color:var(--red);">*</span></label><input class="form-input" type="date"/></div>
+      <div class="form-group"><div class="grid-2" style="gap:12px;">
+        <div><label class="form-label">Start Time</label><input class="form-input" type="time" value="10:00"/></div>
+        <div><label class="form-label">Duration</label><select class="form-select"><option>30 minutes</option><option>45 minutes</option><option selected>60 minutes</option><option>90 minutes</option></select></div>
+      </div></div>
+      <div class="form-group"><label class="form-label">Interview Mode</label><select class="form-select"><option>Video Call (Google Meet)</option><option>Video Call (Zoom)</option><option>Phone Call</option><option>In-person</option></select></div>
+      <div class="form-group"><label class="form-label">Interviewers</label><input class="form-input" value="Admin User, HR Manager"/></div>
+      <div class="form-group" style="margin:0;"><label class="form-label">Notes</label><textarea class="form-textarea" rows="2" placeholder="Any specific topics or notes for the panel…"></textarea></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmInterview()">Send Invite</button>
+      </div>
+    </div>`;
+    document.body.appendChild(m);
+    m.addEventListener('click',e=>{if(e.target===m)closeModal();});
+  }
+  document.getElementById('modal-cand-name').textContent='Candidate: '+(name||CANDIDATES[currentCandidate].n);
+  m.style.display='flex';
+}
+function closeModal(){const m=document.getElementById('interview-modal');if(m)m.style.display='none';}
+function confirmInterview(){closeModal();showToast('Interview invite sent successfully!','success');}
+
+/* ── EXPORT CANDIDATES ── */
+function exportCSV(){
+  const rows=[['Rank','Name','JD','Score','Experience','Status','Email'],...CANDIDATES.map((c,i)=>[i+1,c.n,c.jd,c.sc+'%',c.exp,c.st,c.email])];
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='RecruitAI_Candidates.csv';a.click();
+  showToast('Candidates exported as CSV','success');
+}
+
+/* ── COMPARE VIEW ── */
+function buildComparePage(){
+  const shortlisted=CANDIDATES.filter(c=>c.st==='Shortlisted');
+  const page=document.getElementById('page-candidates');
+  if(!page||shortlisted.length<2){showToast('Need at least 2 shortlisted candidates to compare','warning');return;}
+  const skills=Object.keys(shortlisted[0].sk);
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML=`<div style="background:var(--surface);border-radius:16px;padding:28px;width:560px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-size:16px;font-weight:600;">Shortlisted Candidates — Side by Side</div>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr>
+        <th style="text-align:left;padding:8px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;border-bottom:1px solid var(--border);">Skill</th>
+        ${shortlisted.map(c=>`<th style="text-align:center;padding:8px;font-size:12px;color:var(--text);font-weight:600;border-bottom:1px solid var(--border);">${c.n.split(' ')[0]}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        <tr style="background:var(--surface2);"><td style="padding:8px;font-weight:500;">Match Score</td>${shortlisted.map(c=>`<td style="text-align:center;padding:8px;font-weight:700;color:${scoreColor(c.sc)};">${c.sc}%</td>`).join('')}</tr>
+        <tr><td style="padding:8px;color:var(--text2);">Experience</td>${shortlisted.map(c=>`<td style="text-align:center;padding:8px;">${c.exp}</td>`).join('')}</tr>
+        ${skills.map((sk,si)=>`<tr style="${si%2===0?'background:var(--surface2);':''}"><td style="padding:8px;color:var(--text2);">${sk}</td>${shortlisted.map(c=>`<td style="text-align:center;padding:8px;font-weight:500;color:${scoreColor(c.sk[sk]||0)};">${c.sk[sk]||0}%</td>`).join('')}</tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end;"><button class="btn btn-primary" onclick="this.closest('[style*=fixed]').remove()">Close</button></div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+}
+
+/* ── INIT ── */
+window.onload = function(){
+  // Add dark mode button to sidebar footer
+  const sbUser=document.querySelector('.sb-user');
+  if(sbUser){
+    const darkBtn=document.createElement('button');
+    darkBtn.id='dark-btn';
+    darkBtn.textContent='🌙';
+    darkBtn.title='Toggle dark mode';
+    darkBtn.style.cssText='background:none;border:none;cursor:pointer;font-size:16px;margin-left:auto;margin-right:4px;';
+    darkBtn.onclick=toggleDark;
+    sbUser.appendChild(darkBtn);
+  }
+
+  // Add Compare & Export buttons to candidates topbar
+  const candTopbar=document.getElementById('topbar-candidates');
+  if(candTopbar){
+    const actions=candTopbar.querySelector('.topbar-actions');
+    if(actions){
+      actions.innerHTML=`
+        <button class="btn btn-ghost btn-sm" onclick="buildComparePage()">⇄ Compare</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">↓ CSV</button>
+        <button class="btn btn-ghost btn-sm">↓ PDF</button>`;
+    }
+  }
+
+  // Add interview button to detail topbar actions
+  const detailTopbar=document.getElementById('topbar-detail');
+  if(detailTopbar){
+    const actions=detailTopbar.querySelector('.topbar-actions');
+    if(actions){
+      const origHTML=actions.innerHTML;
+      actions.innerHTML=`<button class="btn btn-ghost btn-sm">📎 Download</button>
+        <button class="btn btn-secondary btn-sm" onclick="openInterviewModal()">📅 Schedule Interview</button>
+        <button class="btn btn-danger btn-sm" onclick="updateStatus('Rejected')">Reject</button>
+        <button class="btn btn-primary btn-sm" onclick="updateStatus('Shortlisted')">Shortlist</button>`;
+    }
+  }
+
+  // Patch "Send Interview Invite" button in detail page (dynamic)
+  const origOpenDetail=window.openDetail;
+  window.openDetail=function(idx){
+    origOpenDetail(idx);
+    // After detail renders, wire interview button in recruiter actions panel
+    setTimeout(()=>{
+      const btns=document.querySelectorAll('#detail-content .btn');
+      btns.forEach(b=>{if(b.textContent.includes('Interview'))b.onclick=()=>openInterviewModal();});
+    },50);
+  };
+
+  // Set today as default date in interview modal
+  const today=new Date().toISOString().split('T')[0];
+  setTimeout(()=>{const di=document.querySelector('#interview-modal input[type=date]');if(di)di.value=today;},100);
+};
+</script>
+</body>
+</html>

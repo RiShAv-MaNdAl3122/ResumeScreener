@@ -1,0 +1,29 @@
+# Virtual Environment
+venv/
+env/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+logs/
+*.log
+
+# VS Code
+.vscode/
+
+# Environment Variables
+.env
+
+# Batch Output
+batch_results.csv
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
