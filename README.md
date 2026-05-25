@@ -56,35 +56,7 @@ Contains relational `.sql` files:
 
 ---
 
-## 🔄 System & Data Flow
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Recruiter as Recruiter (UI)
-    participant FE as React Frontend
-    participant BE as Express Backend
-    participant DB as MySQL DB
-    participant AI as Python FastAPI
-
-    Recruiter->>FE: Upload Resume + Select Job
-    FE->>BE: POST /api/screen (FormData)
-    BE->>AI: POST /analyze (File + JD Text)
-    Note over AI: 1. Extract Text (PDF/Docx)<br/>2. Crop Profile Photo (fitz/Pillow)<br/>3. Parse Contact & Info<br/>4. Calculate Similarity & Skills
-    AI-->>BE: Return JSON Result + Photo Base64
-    Note over BE: Save photo to uploads/Candidate-Photos/<br/>Insert candidate & resume rows<br/>Insert screening scores
-    BE->>DB: INSERT/UPDATE Tables
-    DB-->>BE: Confirmed
-    BE-->>FE: Return JSON Response
-    FE-->>Recruiter: Render candidate results & metrics
-```
-
-1. **Authentication Flow:** Users register/login through Firebase Auth in the frontend. On success, the client passes credentials to `/api/auth/login-firebase` where the backend verifies or creates the record in MySQL, signing a local JWT token for subsequent API calls.
-2. **Screening Flow:** Resumes are sent from the client to `/api/screen`. The backend loads the selected job description, aggregates the payload, and sends it to the Python AI service at `localhost:8000/analyze`.
-3. **AI Logic:** The Python parser returns extracted name/contact details, a cropped profile photo (if found), a keyword match bonus, and computed cosine similarity.
-4. **Persistence & Presentation:** The backend writes the cropped photo to disk, enters records into `candidates`, `resumes`, and `screening_results` tables, and returns the response. The client state updates, instantly updating the Dashboard and Candidate lists.
-
----
 
 ## 💻 Local Installation & Setup
 
