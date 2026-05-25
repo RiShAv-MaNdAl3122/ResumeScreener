@@ -1,4 +1,5 @@
 import io
+import re
 import PyPDF2
 from docx import Document
 
@@ -38,3 +39,6 @@ def extract_text_from_docx(file_bytes: bytes) -> str:
                         text_chunks.append(paragraph.text.strip())
                         
     return "\n".join(text_chunks)
+
+
+

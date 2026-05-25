@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600&family=DM+Mono:wght@500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-on-background font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .shadow-level-1 {
+    box-shadow: none;
+    border: 1px solid rgba(0,0,0,0.09);
+  }
+  .shadow-level-2 {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .shadow-level-3 {
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  }
+  .text-display-metric {
+    @apply font-sans text-[26px] font-semibold leading-[32px];
+  }
+  .text-headline-auth {
+    @apply font-sans text-[22px] font-semibold leading-[28px];
+  }
+  .text-title-page {
+    @apply font-sans text-[16px] font-semibold leading-[24px];
+  }
+  .text-body-standard {
+    @apply font-sans text-[14px] font-normal leading-[21px];
+  }
+  .text-body-bold {
+    @apply font-sans text-[14px] font-semibold leading-[21px];
+  }
+  .text-nav-item {
+    @apply font-sans text-[13px] font-normal leading-[20px];
+  }
+  .text-label-caps {
+    @apply font-sans text-[11px] font-semibold leading-[16px] tracking-[0.06em] uppercase;
+  }
+  .text-data-mono {
+    @apply font-mono text-[13px] font-medium leading-[18px];
+  }
+  .text-data-mono-sm {
+    @apply font-mono text-[11px] font-medium leading-[14px];
+  }
+  
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+  }
+  
+  .hero-gradient {
+    background: radial-gradient(circle at 50% -20%, #E1F5EE 0%, #faf9f5 60%);
+  }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  /* ---- Entry Animations ---- */
+  .animate-in {
+    animation-fill-mode: both;
+  }
+  .fade-in {
+    animation: fadeIn var(--tw-duration, 0.5s) ease-out;
+  }
+  .slide-in-from-bottom-4 {
+    animation: slideInFromBottom var(--tw-duration, 0.5s) ease-out;
+  }
+  .slide-in-from-right-4 {
+    animation: slideInFromRight var(--tw-duration, 0.5s) ease-out;
+  }
+  .zoom-in-95 {
+    animation: zoomIn95 var(--tw-duration, 0.2s) ease-out;
+  }
+  .duration-300 { --tw-duration: 0.3s; }
+  .duration-500 { --tw-duration: 0.5s; }
+  .duration-700 { --tw-duration: 0.7s; }
+  .duration-200 { --tw-duration: 0.2s; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideInFromBottom {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideInFromRight {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes zoomIn95 {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* ---- Custom Scrollbar ---- */
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+
+  /* ---- Global Scrollbar ---- */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #e3e2df; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #bccac1; }
+
+  /* ---- Score Ring animation ---- */
+  .score-ring {
+    transition: stroke-dashoffset 1s ease-out;
+  }
+}
+
+@media print {
+  /* Hide the entire React app */
+  #root {
+    display: none !important;
+  }
+
+  /* Show only the report region — it is portalled to body when printing */
+  .report-print-region {
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    z-index: 99999 !important;
+  }
+
+  .report-print-region * {
+    display: revert !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Keep table rows from splitting across pages */
+  tr, td, th {
+    page-break-inside: avoid !important;
+  }
+
+  /* Ensure colour backgrounds and gradients print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

@@ -35,3 +35,8 @@ linux,os
 html,frontend
 css,frontend
 tailwind,frontend
+langchain,ai
+langgraph,ai
+langsmith,ai
+rag,ai
+mlop,ai

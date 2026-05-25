@@ -1,0 +1,28 @@
+DROP TABLE IF EXISTS `screening_results`;
+CREATE TABLE `screening_results` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `candidate_id` int NOT NULL,
+  `job_id` int NOT NULL,
+  `score` float DEFAULT NULL,
+  `semantic_score` float DEFAULT NULL,
+  `skill_score` float DEFAULT NULL,
+  `keyword_bonus` float DEFAULT NULL,
+  `matched_skills` json DEFAULT NULL,
+  `missing_skills` json DEFAULT NULL,
+  `strength` varchar(50) DEFAULT NULL,
+  `recruiter_note` text DEFAULT NULL,
+  `confidence` float DEFAULT NULL,
+  `ai_recommendation` text DEFAULT NULL,
+  `similarity` float DEFAULT NULL,
+  `skill_match_percentage` float DEFAULT NULL,
+  `explanation` json DEFAULT NULL,
+  `processed_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `job_version` int DEFAULT '1',
+  `requires_rescreening` tinyint(1) DEFAULT '0',
+  `status` varchar(50) DEFAULT 'Reviewing',
+  PRIMARY KEY (`id`),
+  KEY `candidate_id` (`candidate_id`),
+  KEY `job_id` (`job_id`),
+  CONSTRAINT `screening_results_ibfk_1` FOREIGN KEY (`candidate_id`) REFERENCES `candidates` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `screening_results_ibfk_2` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

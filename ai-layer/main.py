@@ -2,6 +2,7 @@ import time
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from resume_parser import extract_text_from_pdf, extract_text_from_docx
+from details_extractor import extract_details
 from preprocess import preprocess_text
 from skill_extractor import extract_skills, compare_skills
 from similarity import calculate_similarity
@@ -42,6 +43,11 @@ async def analyze_resume(
         logger.info("Parsing success")
         logger.info(f"Characters extracted: {len(raw_resume_text)}")
         
+        # 1b. Extract candidate contact info + photo
+        candidate_info = extract_details(raw_resume_text, file_bytes=file_bytes, filename=resume.filename)
+        logger.info(f"Candidate name: {candidate_info['candidate_name']}, email: {candidate_info['candidate_email']}")
+        logger.info(f"Candidate photo extracted: {'yes' if candidate_info.get('candidate_photo') else 'no'}")
+        
         # 2. NLP Processing
         clean_resume_text = preprocess_text(raw_resume_text)
         clean_jd_text = preprocess_text(jd)
@@ -58,11 +64,11 @@ async def analyze_resume(
         logger.info(f"Matched Skills: {matched_skills}")
         logger.info(f"Missing Skills: {missing_skills}")
         
-        skill_match_percentage = 0
+        skill_match_percentage = 0.0
         if len(jd_skills) > 0:
-            skill_match_percentage = round((len(matched_skills) / len(jd_skills)) * 100)
+            skill_match_percentage = round((len(matched_skills) / len(jd_skills)) * 100, 2)
         elif len(jd_skills) == 0 and len(resume_skills) >= 0:
-            skill_match_percentage = 100
+            skill_match_percentage = 100.0
             
         # 4. Similarity Engine
         similarity_score = calculate_similarity(clean_resume_text, clean_jd_text)
@@ -90,6 +96,12 @@ async def analyze_resume(
         explanation += [f"{skill.upper() if len(skill) <= 3 else skill.capitalize()} missing" for skill in missing_skills]
         
         return {
+            "candidate_name": candidate_info["candidate_name"],
+            "candidate_email": candidate_info["candidate_email"],
+            "candidate_phone": candidate_info.get("candidate_phone"),
+            "experience_years": candidate_info.get("experience_years"),
+            "education": candidate_info.get("education"),
+            "candidate_photo": candidate_info.get("candidate_photo"),
             "score": final_score,
             "score_breakdown": score_breakdown,
             "similarity": round(similarity_score, 2),
